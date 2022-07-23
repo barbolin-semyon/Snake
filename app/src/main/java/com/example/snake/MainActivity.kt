@@ -20,11 +20,12 @@ import com.example.snake.data.GameEngine
 import com.example.snake.ui.theme.SnakeTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
+import androidx.compose.material.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.example.snake.data.SnakeDirection
 
 class MainActivity : ComponentActivity() {
@@ -38,12 +39,12 @@ class MainActivity : ComponentActivity() {
                     Board(viewModel = viewModel)
                     Arrows(viewModel = viewModel)
                 }
+                GameOverView(viewModel = viewModel)
                 viewModel.start()
             }
         }
     }
 }
-
 
 @Composable
 private fun Board(viewModel: GameEngine) {
@@ -121,6 +122,40 @@ private fun Arrows(viewModel: GameEngine) {
 @Composable
 private fun Arrow(painterId: Int, onClick: () -> Unit) {
     Button(onClick = { onClick() }, Modifier.padding(8.dp)) {
-        Icon(painter = painterResource(id = painterId), contentDescription = "btn", modifier = Modifier.size(30.dp))
+        Icon(
+            painter = painterResource(id = painterId),
+            contentDescription = "btn",
+            modifier = Modifier.size(30.dp)
+        )
+    }
+}
+
+@Composable
+private fun GameOverView(viewModel: GameEngine) {
+    val state = viewModel.gameIsOver.observeAsState()
+
+    if (state.value!!) {
+        Card(
+            Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            backgroundColor = (Color.Red)
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "Вы проиграли",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+
+                TextButton(
+                    onClick = { viewModel.restartGame() },
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text(text = "Попробовать снова", color = Color.White)
+                }
+            }
+        }
     }
 }
