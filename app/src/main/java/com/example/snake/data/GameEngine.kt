@@ -1,5 +1,8 @@
 package com.example.snake.data
 
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
@@ -11,39 +14,41 @@ import kotlinx.coroutines.launch
 class GameEngine : ViewModel() {
     final val BOARD_SIZE = 10
 
-    private val _stateGame = MutableStateFlow(
+    private val _stateGame = MutableLiveData(
         State(
             food = Pair(3, 3),
             snake = listOf(Pair(6, 6)),
             direction = SnakeDirection.RIGHT
         )
     )
-    val stateGame: StateFlow<State>
+    val stateGame: LiveData<State>
         get() = _stateGame
 
-    private val _gameIsOver = MutableStateFlow(false)
-    val gameIsOver: StateFlow<Boolean>
+    private val _gameIsOver = MutableLiveData(false)
+    val gameIsOver: LiveData<Boolean>
         get() = _gameIsOver
 
     fun start() = viewModelScope.launch {
-        delay(150)
 
-        var food = _stateGame.value.food
-        val direction = _stateGame.value.direction
-        val snake = _stateGame.value.snake.toMutableList()
+        while (_gameIsOver.value!!.not()) {
+            delay(200)
+            var food = _stateGame.value!!.food
+            val direction = _stateGame.value!!.direction
+            val snake = _stateGame.value!!.snake.toMutableList()
 
-        val header = getNewHeaderSnake(_stateGame.value.snake.first(), _stateGame.value.direction)
+            val header = getNewHeaderSnake(_stateGame.value!!.snake.first(), _stateGame.value!!.direction)
 
-        if (header != _stateGame.value.food) {
-            snake.remove(snake[snake.lastIndex])
-        } else {
-            food = getRandomPair()
+            if (header != _stateGame.value!!.food) {
+                snake.remove(snake[snake.lastIndex])
+            } else {
+                food = getRandomPair()
+            }
+
+            snake.add(0, header)
+
+            _stateGame.value = State(food, snake.toList(), direction)
+            _gameIsOver.value = snake.count { header == it } > 1 || isHeaderInWall(header)
         }
-
-        _stateGame.update { state ->
-            return@update State(food, snake.toList(), direction)
-        }
-        _gameIsOver.value = snake.contains(header) && isHeaderInWall(header)
     }
 
 
@@ -61,7 +66,7 @@ class GameEngine : ViewModel() {
     }
 
     private fun isHeaderInWall(header: Pair<Int, Int>): Boolean {
-        return header.first in 0..BOARD_SIZE && header.second in 0..BOARD_SIZE
+        return (header.first in 1 until BOARD_SIZE).not() || (header.second in 1 until BOARD_SIZE).not()
     }
 
     private fun getRandomPair(): Pair<Int, Int> {
