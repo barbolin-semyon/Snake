@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class GameEngine : ViewModel() {
-    final val BOARD_SIZE = 10
+    final val BOARD_SIZE = 20
 
     private val _stateGame = MutableLiveData(
         State(
@@ -31,7 +31,7 @@ class GameEngine : ViewModel() {
     fun start() = viewModelScope.launch {
 
         while (_gameIsOver.value!!.not()) {
-            delay(200)
+            delay(500)
             var food = _stateGame.value!!.food
             val direction = _stateGame.value!!.direction
             val snake = _stateGame.value!!.snake.toMutableList()
@@ -51,6 +51,10 @@ class GameEngine : ViewModel() {
         }
     }
 
+    fun updateDirection(direction: SnakeDirection) {
+        _stateGame.value!!.direction = direction
+    }
+
 
     private fun getNewHeaderSnake(
         previousHeader: Pair<Int, Int>,
@@ -60,8 +64,8 @@ class GameEngine : ViewModel() {
         return when(direction) {
             SnakeDirection.RIGHT -> Pair(previousHeader.first + 1, previousHeader.second)
             SnakeDirection.LEFT -> Pair(previousHeader.first - 1, previousHeader.second)
-            SnakeDirection.TOP -> Pair(previousHeader.first, previousHeader.second + 1)
-            else -> Pair(previousHeader.first, previousHeader.second - 1)
+            SnakeDirection.TOP -> Pair(previousHeader.first, previousHeader.second - 1)
+            else -> Pair(previousHeader.first, previousHeader.second + 1)
         }
     }
 
