@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,8 +17,8 @@ class GameEngine : ViewModel() {
 
     private val _stateGame = MutableLiveData(
         State(
-            food = Pair(3, 3),
-            snake = listOf(Pair(6, 6)),
+            food = getRandomPair(),
+            snake = listOf(getRandomPair()),
             direction = SnakeDirection.RIGHT
         )
     )
@@ -49,10 +50,21 @@ class GameEngine : ViewModel() {
             _stateGame.value = State(food, snake.toList(), direction)
             _gameIsOver.value = snake.count { header == it } > 1 || isHeaderInWall(header)
         }
+        cancel()
     }
 
     fun updateDirection(direction: SnakeDirection) {
         _stateGame.value!!.direction = direction
+    }
+
+    fun restartGame() {
+        _gameIsOver.value = false
+        _stateGame.value = State(
+            food = getRandomPair(),
+            snake = listOf(getRandomPair()),
+            direction = SnakeDirection.RIGHT
+        )
+        start()
     }
 
 
