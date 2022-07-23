@@ -32,7 +32,7 @@ class GameEngine : ViewModel() {
     fun start() = viewModelScope.launch {
 
         while (_gameIsOver.value!!.not()) {
-            delay(500)
+            delay(200)
             var food = _stateGame.value!!.food
             val direction = _stateGame.value!!.direction
             val snake = _stateGame.value!!.snake.toMutableList()
